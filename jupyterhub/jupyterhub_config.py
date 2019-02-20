@@ -2,30 +2,18 @@
 c.JupyterHub.admin_access = True
 c.Spawner.default_url = '/lab'
 
-## Authenticator
-from oauthenticator.oauth2 import OAuthLoginHandler
-from oauthenticator.generic import GenericOAuthenticator
-from tornado.auth import OAuth2Mixin
+## LDAP Authenticator
+c.JupyterHub.authenticator_class = 'ldapauthenticator.LDAPAuthenticator'
+c.LDAPAuthenticator.server_address = 'ldap.ncsa.illinois.edu'
+c.LDAPAuthenticator.use_ssl = True
+c.LDAPAuthenticator.bind_dn_template = [
+    "uid={username},ou=people,dc=ncsa,dc=illinois,dc=edu",
+]
+c.LDAPAuthenticator.allowed_groups = [
+    "cn=prj_cg_isgs,ou=groups,dc=ncsa,dc=illinois,dc=edu",
+]
 
-class UVSQMixin(OAuth2Mixin):
-    _OAUTH_AUTHORIZE_URL = 'https://jupyter.ens.uvsq.fr/c2o2b/login'
-    _OAUTH_ACCESS_TOKEN_URL = 'https://jupyter.ens.uvsq.fr/c2o2b/token'
-
-class UVSQLoginHandler(OAuthLoginHandler, UVSQMixin):
-    pass
-
-class UVSQAuthenticator(GenericOAuthenticator):
-    login_service = 'UVSQ'
-    login_handler = UVSQLoginHandler
-    client_id = '0'
-    client_secret = ''
-    userdata_url = 'https://jupyter.ens.uvsq.fr/c2o2b/userdata'
-    token_url = 'https://jupyter.ens.uvsq.fr/c2o2b/token'
-    oauth_callback_url = 'https://jupyter.ens.uvsq.fr/hub/oauth_callback'
-
-c.JupyterHub.authenticator_class = UVSQAuthenticator
-
-c.Authenticator.admin_users = { 'lucadefe' }
+c.Authenticator.admin_users = { 'jefft' }
 
 
 ## Docker spawner
@@ -41,7 +29,12 @@ c.JupyterHub.hub_ip = os.environ['HUB_IP']
 # see https://github.com/jupyterhub/dockerspawner#data-persistence-and-dockerspawner
 notebook_dir = os.environ.get('DOCKER_NOTEBOOK_DIR') or '/home/jovyan'
 c.DockerSpawner.notebook_dir = notebook_dir
-c.DockerSpawner.volumes = { 'jupyterhub-user-{username}': notebook_dir }
+#c.DockerSpawner.volumes = { 'jupyterhub-user-{username}': notebook_dir }
+c.DockerSpawner.volumes = { 
+    'jupyterhub-user-{username}': notebook_dir,
+    '/mnt/nrcs/isgs/lidar': '/data/lidar',
+    '/mnt/nrcs/isgs/output/pp2g': '/data/dem',
+}
 
 # Other stuff
 c.Spawner.cpu_limit = 1
