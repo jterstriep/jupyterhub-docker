@@ -31,9 +31,20 @@ notebook_dir = os.environ.get('DOCKER_NOTEBOOK_DIR') or '/home/jovyan'
 c.DockerSpawner.notebook_dir = notebook_dir
 #c.DockerSpawner.volumes = { 'jupyterhub-user-{username}': notebook_dir }
 c.DockerSpawner.volumes = { 
-    'jupyterhub-user-{username}': notebook_dir,
-    '/mnt/nrcs/isgs/lidar': '/data/lidar',
-    '/mnt/nrcs/isgs/output/pp2g': '/data/dem',
+    'jupyterhub-user-{username}': os.path.join(notebook_dir, 'work'),
+
+    '/mnt/nrcs/isgs': {
+        'bind': os.path.join(notebook_dir, 'isgs'), 'mode': 'rw',
+    },
+    '/mnt/nrcs/isgs/lidar': {
+        'bind': os.path.join(notebook_dir, 'lidar'), 'mode': 'ro'
+    },
+    '/mnt/nrcs/isgs/output/pp2g': {
+        'bind': os.path.join(notebook_dir, 'dem'), 'mode': 'ro'
+    },
+    '/mnt/nrcs/jupyterhub/examples': {
+        'bind': os.path.join(notebook_dir, 'examples'), 'mode': 'ro'
+    },
 }
 
 # Other stuff
