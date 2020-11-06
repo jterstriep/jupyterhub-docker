@@ -1,6 +1,6 @@
 module.exports = {
     // The URL where the OAuth2 server will respond
-    appURL: "https://jupyter.ens.uvsq.fr/c2o2b",
+    appURL: "https://lidar.ncsa.illinois.edu/c2o2b",
     // The port to bind to
     port: process.env.PORT,
 
