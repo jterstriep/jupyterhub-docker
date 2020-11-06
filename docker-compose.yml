@@ -9,13 +9,30 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock
 #      - /mnt/nrcs/isgs:/data
     environment:
-      DOCKER_JUPYTER_CONTAINER: jterstriep/geo-notebook:latest
+      DOCKER_JUPYTER_CONTAINER: jterstriep/geo-notebook:pyviz
       DOCKER_NETWORK_NAME: ${COMPOSE_PROJECT_NAME}_default
       HUB_IP: jupyterhub
     labels:
       - "traefik.enable=true"
       - "traefik.frontend.rule=Host:lidar.ncsa.illinois.edu"
     restart: on-failure
+
+  minio-data:
+    image: minio/minio
+    container_name: minio-data
+    command: "server /data" 
+    ports:
+      - "9000:9000"
+    environment:
+      MINIO_ACCESS_KEY: ${MINIO_ACCESS_KEY}
+      MINIO_SECRET_KEY: ${MINIO_SECRET_KEY}
+    labels:
+      - "traefik.enable=true"
+      - "traefik.frontend.rule=Host:lidar.ncsa.illinois.edu;PathPrefixStrip:/data"
+      - "traefik.port=9000"
+    volumes:
+      - /mnt/nrcs/dap:/data
+      - /mnt/nrcs/minio:/root/.minio
 
 #  jupyterlab:
 #    build: jupyterlab
@@ -25,7 +42,7 @@ services:
 #    command: echo
 
   reverse-proxy:
-    image: traefik
+    image: traefik:v1.7
     container_name: reverse-proxy
     ports:
       - "80:80"
